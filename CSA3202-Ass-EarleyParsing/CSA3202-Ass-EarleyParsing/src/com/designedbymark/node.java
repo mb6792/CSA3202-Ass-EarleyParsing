@@ -12,6 +12,6 @@ public class node {
 	
 	public node(String s){
 		name = s;
-		pointers = new Vector();
+		pointers = new Vector();ss
 	}
 }
