@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import java.awt.Font;
 
 public class MainFrame extends JFrame {
 
@@ -55,35 +56,6 @@ public class MainFrame extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
 		
-		JPanel bottomPanel = new JPanel();
-		contentPane.add(bottomPanel, BorderLayout.SOUTH);
-		bottomPanel.setLayout(new BorderLayout(0, 0));
-		
-		txtInputString  = new JTextField();
-		txtInputString.setText("Input String");
-		bottomPanel.add(txtInputString, BorderLayout.NORTH);
-		txtInputString.setColumns(10);
-		
-		JPanel panel_1 = new JPanel();
-		bottomPanel.add(panel_1, BorderLayout.CENTER);
-		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
-		
-		JButton btnRecognize = new JButton("Recognize");
-		btnRecognize.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-			}
-		});
-		panel_1.add(btnRecognize);
-		
-		JButton btnParse = new JButton("Parse");
-		btnParse.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-			}
-		});
-		panel_1.add(btnParse);
-		
 		JPanel centrePanel = new JPanel();
 		contentPane.add(centrePanel, BorderLayout.CENTER);
 		centrePanel.setLayout(new BorderLayout(0, 0));
@@ -102,10 +74,60 @@ public class MainFrame extends JFrame {
 		JButton btnBrowse = new JButton("Browse");
 		btnBrowse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				JFileChooser fc = new JFileChooser();
+				fc.showOpenDialog(MainFrame.this);
+				File selImpFile = fc.getSelectedFile();
+				importPathTF.setText(selImpFile.toString());
 			}
 		});
 		panel.add(btnBrowse, BorderLayout.EAST);
+		
+		JPanel panel_2 = new JPanel();
+		panel.add(panel_2, BorderLayout.SOUTH);
+		panel_2.setLayout(new BorderLayout(0, 0));
+		
+		txtInputString  = new JTextField();
+		txtInputString.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		panel_2.add(txtInputString, BorderLayout.CENTER);
+		txtInputString.setText("Input String");
+		txtInputString.setColumns(10);
+		
+		JPanel panel_1 = new JPanel();
+		panel_2.add(panel_1, BorderLayout.SOUTH);
+		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
+		
+		JButton btnRecognize = new JButton("Recognize");
+		btnRecognize.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String grammarFile = importPathTF.getText();
+				String sentence = txtInputString.getText();
+				Earley e = null;
+				try {
+					e = new Earley(grammarFile, sentence);
+				} catch (IOException e1) {
+					JOptionPane.showMessageDialog(null, "Error in Earley Parsing", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+				
+				if(e.getFound()){
+					JOptionPane.showMessageDialog(null, "This String is in L(G)");
+				}else{
+					JOptionPane.showMessageDialog(null, "Not A Member");
+				}
+			}
+		});
+		panel_1.add(btnRecognize);
+		
+		JButton btnParse = new JButton("Parse");
+		btnParse.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+			}
+		});
+		panel_1.add(btnParse);
+		
+		JPanel bottomPanel = new JPanel();
+		centrePanel.add(bottomPanel, BorderLayout.SOUTH);
+		bottomPanel.setLayout(new BorderLayout(0, 0));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		centrePanel.add(scrollPane, BorderLayout.CENTER);
