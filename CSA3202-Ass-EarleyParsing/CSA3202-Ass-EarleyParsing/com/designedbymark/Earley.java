@@ -12,10 +12,11 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 
 class Earley{
-	public Hashtable grammar;		//datastructure to store the grammer
-	public chart charts[];				//datastructure to store the charts
-	public chart lexicon[];			//the lexicon
+	public Hashtable grammar;			//datastructure to store the grammer
+	public Chart charts[];				//datastructure to store the charts
+	public Chart lexicon[];				//the lexicon
 	public String sentenceArr[];		//sentence to be parsed
+	Node parseTree;
 	
 	String sentence;
 	
@@ -23,21 +24,19 @@ class Earley{
 	private int c1;
 	boolean found;
 	
-	node ptree;							//parsetree
-	
 	public Earley(String grammarS, String sentenceS) throws IOException{
 		sentenceArr = sentenceS.split(" ");
 		int length = sentenceArr.length;
 		
 		this.grammar = new Hashtable();
-		this.lexicon = new chart[length];
-		charts = new chart[length+1];
+		this.lexicon = new Chart[length];
+		charts = new Chart[length+1];
 		
 		for (int i = 0; i < length; i++) {
-			lexicon[i] = new chart();
+			lexicon[i] = new Chart();
 		}
 		for (int i = 0; i <= length; i++) {
-			charts[i] = new chart();
+			charts[i] = new Chart();
 		}
 		
 		sentence = sentenceS;
@@ -50,6 +49,10 @@ class Earley{
 	
 	public boolean getFound(){
 		return found;
+	}
+	
+	public Chart[] getCharts(){
+		return charts;
 	}
 	
 	public void EarleyParse(String grammarS, String sentenceSplit[]) throws IOException{
@@ -139,11 +142,11 @@ class Earley{
 		}
 		
 	//	Procedures p = new Procedures(this.grammar, lexicon, charts, sentenceArr, c);
-		enqueue(new rules(1,0,0,"@ S",'D'), 0, 0);
+		enqueue(new Rules(1,0,0,"@ S",'D'), 0, 0);
 		for (int i = 0; i < (length + 1); i++) {
 			int tc = charts[i].table.size();
 			for (int j = 0; j < charts[i].table.size(); j++) {
-				rules tempRule = (rules)charts[i].table.elementAt(j);
+				Rules tempRule = (Rules)charts[i].table.elementAt(j);
 				if(tempRule.dot != tempRule.rule.size()){ 
 					if((nonterminals.indexOf((String)tempRule.rule.elementAt(tempRule.dot))) != -1){
 						predictor(tempRule);
@@ -164,7 +167,7 @@ class Earley{
 		
 		int ruleNum = -1;
 		for (int i = 0; i < charts[charts.length-1].table.size(); i++) {
-			rules tempRules = (rules)(charts[charts.length-1].table.elementAt(i));
+			Rules tempRules = (Rules)(charts[charts.length-1].table.elementAt(i));
 			String s = (String) tempRules.rule.elementAt(0);
 			if((s.equals("S")) & (tempRules.dot == tempRules.rule.size())){
 				ruleNum = tempRules.ruleNum;
@@ -173,47 +176,48 @@ class Earley{
 		}
 		if(ruleNum != -1){
 			found = true;
+			parseTree = tree(ruleNum);
 		}
 	}
 	
-	public void predictor(rules rule){
+	public void predictor(Rules rule){
 		Vector v = (Vector) grammar.get(rule.rule.elementAt(rule.dot));
 		for(int i=0; i<(v.size()); i++){
 			String sentence = ((String) rule.rule.elementAt(rule.dot)) + " " + ((String)v.elementAt(i));
-			rules tempRule = new rules(1, rule.end, rule.end, sentence, 'P');
+			Rules tempRule = new Rules(1, rule.end, rule.end, sentence, 'P');
 			enqueue(tempRule,rule.end,0);
 		}
 	}
 	
-	public void scanner(rules rule){
+	public void scanner(Rules rule){
 		for(int i=0; i<lexicon[rule.end].table.size(); i++){
 			String tempRule = (String) rule.rule.elementAt(rule.dot);
 			String tempLexi = (String) lexicon[rule.end].table.elementAt(i);
 			if(tempRule.equals(tempLexi)){
 				String inRule = ((String)lexicon[rule.end].table.elementAt(i)) + " " + sentenceArr[rule.end];
-				rules r = new rules(2, rule.end, rule.end+1, inRule, 'S');
+				Rules r = new Rules(2, rule.end, rule.end+1, inRule, 'S');
 				enqueue(r, rule.end+1, 1);
 			}
 		}
 	}
 	
-	public void completor(rules rule){
+	public void completor(Rules rule){
 		for(int i=0; i<charts[rule.start].table.size(); i++){
-			rules tempRule = (rules) charts[rule.start].table.elementAt(i);
+			Rules tempRule = (Rules) charts[rule.start].table.elementAt(i);
 			if(tempRule.rule.size() != tempRule.dot){
 				String ruleS = (String) rule.rule.elementAt(0);
 				String tempRuleS = (String) tempRule.rule.elementAt(tempRule.dot);
 				if(ruleS.equals(tempRuleS)){
 					Vector v = (Vector) tempRule.pointer.clone();
 					v.addElement(new Integer(rule.ruleNum));
-					rules r = new rules(tempRule.dot+1, tempRule.start, rule.end, tempRule.rule, v, 'C');
+					Rules r = new Rules(tempRule.dot+1, tempRule.start, rule.end, tempRule.rule, v, 'C');
 					enqueue(r, rule.end, 2);
 				}
 			}
 		}
 	}
 
-	public void enqueue(rules r, int i, int check){
+	public void enqueue(Rules r, int i, int check){
 		String ts1 = null;
 		for(int c=0; c<r.rule.size(); c++){
 			if(c == 0){
@@ -227,7 +231,7 @@ class Earley{
 		String ts3 = null;
 		int temp = charts[i].table.size();
 		for (int j = 0; j < charts[i].table.size(); j++) {
-			rules tempRules = (rules) charts[i].table.elementAt(j);
+			Rules tempRules = (Rules) charts[i].table.elementAt(j);
 			String ts2 = null;
 			
 			for (int k = 0; k < tempRules.rule.size(); k++) {
@@ -265,5 +269,31 @@ class Earley{
 			}
 			charts[i].table.addElement(r);
 		}
+	}
+	
+	public Node tree(int ruleNum){
+		for (int i = 0; i < charts.length; i++) {
+			for (int j = 0; j < charts[i].table.size(); j++) {
+				Rules tempRule = (Rules)charts[i].table.elementAt(j);
+				if (tempRule.ruleNum == ruleNum) {
+					Node node = new Node((String) tempRule.rule.elementAt(0));
+					boolean flag = false;
+					for (int k = tempRule.pointer.size()-1; k >= 0; k--) {
+						flag = true;
+						Node tempNodeAdd = tree(((Integer)tempRule.pointer.elementAt(k)).intValue());
+						node.pointers.addElement(tempNodeAdd);
+					}
+					if (flag == false) {
+						Node tempNodeAdd = new Node((String)tempRule.rule.elementAt(1)); 
+					}
+					return node;
+				}
+			}
+		}
+		return new Node();
+	}
+	
+	public Node getParseTree(){
+		return parseTree;
 	}
 }

@@ -2,17 +2,17 @@ package com.designedbymark;
 
 import java.util.Vector;
 
-public class rules {
+public class Rules {
 	int dot, start, end, ruleNum;
 	Vector rule, pointer;
 	char ch;
 	
-	public rules(){
+	public Rules(){
 		rule = new Vector();
 		pointer = new Vector();
 	}
 	
-	public rules(int dot, int start, int end, String sent, char ch){
+	public Rules(int dot, int start, int end, String sent, char ch){
 		String s[] = sent.split(" ");
 		this.dot = dot;
 		this.start = start;
@@ -26,7 +26,7 @@ public class rules {
 		}
 	}
 	
-	public rules(int dot, int start, int end, Vector ruleVect, Vector pointerVect, char ch){
+	public Rules(int dot, int start, int end, Vector ruleVect, Vector pointerVect, char ch){
 		this.dot = dot;
 		this.start = start;
 		this.end = end;

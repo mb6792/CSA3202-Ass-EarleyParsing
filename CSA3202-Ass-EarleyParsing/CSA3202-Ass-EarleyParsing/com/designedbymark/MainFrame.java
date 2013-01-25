@@ -18,39 +18,46 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.Font;
+import javax.swing.ListSelectionModel;
 
 public class MainFrame extends JFrame {
 
 	private JPanel contentPane;
-	private JTable grammarTable;
+	private JTable chartsTable;
 	private JTextField importPathTF;
 	private JTextField txtInputString;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					MainFrame frame = new MainFrame();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	
+	private Earley e = null;
 
 	/**
 	 * Create the frame.
 	 */
 	public MainFrame() {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (InstantiationException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (IllegalAccessException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+
 		setTitle("Human Language Technologies Assignment 2012/13 - Mark Bonnici\n");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 552, 868);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -99,20 +106,7 @@ public class MainFrame extends JFrame {
 		JButton btnRecognize = new JButton("Recognize");
 		btnRecognize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String grammarFile = importPathTF.getText();
-				String sentence = txtInputString.getText();
-				Earley e = null;
-				try {
-					e = new Earley(grammarFile, sentence);
-				} catch (IOException e1) {
-					JOptionPane.showMessageDialog(null, "Error in Earley Parsing", "Error", JOptionPane.ERROR_MESSAGE);
-				}
-				
-				if(e.getFound()){
-					JOptionPane.showMessageDialog(null, "This String is in L(G)");
-				}else{
-					JOptionPane.showMessageDialog(null, "Not A Member");
-				}
+				recGrammar(true);
 			}
 		});
 		panel_1.add(btnRecognize);
@@ -120,7 +114,10 @@ public class MainFrame extends JFrame {
 		JButton btnParse = new JButton("Parse");
 		btnParse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				recGrammar(false);
 				
+				Tree t = new Tree(e.getParseTree());
+				t.setVisible(true);
 			}
 		});
 		panel_1.add(btnParse);
@@ -132,9 +129,71 @@ public class MainFrame extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		centrePanel.add(scrollPane, BorderLayout.CENTER);
 		
-		grammarTable = new JTable();
-		grammarTable.setAutoCreateRowSorter(true);
-		scrollPane.setViewportView(grammarTable);
+		chartsTable = new JTable();
+		scrollPane.setViewportView(chartsTable);
+	}
+	
+	public void recGrammar(boolean displayMessage){
+		String grammarFile = importPathTF.getText();
+		String sentence = txtInputString.getText();
+		try {
+			e = new Earley(grammarFile, sentence);
+		} catch (IOException e1) {
+			JOptionPane.showMessageDialog(null, "Error in Earley Parsing", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		
+		if(displayMessage){
+			if(e.getFound()){
+				JOptionPane.showMessageDialog(null, "This String is in L(G)");
+			}else{
+				JOptionPane.showMessageDialog(null, "Not A Member");
+			}
+		}
+		
+		fillChartsTable(e.getCharts());
 	}
 
+	public void fillChartsTable(Chart[] charts){
+		DefaultTableModel tableModel = new DefaultTableModel();
+
+		String[] columnNames = { "State No.", "Production", "Origin", "Comment" };
+		tableModel.setColumnIdentifiers(columnNames);
+
+		for (int i = 0; i < charts.length; i++) {
+			String[] chartNoRow =  {"CHART: " + i, "","",""};
+			tableModel.addRow(chartNoRow);
+			for (int j = 0; j < charts[i].table.size(); j++) {
+				int stateNo;
+				String prod, origin, comment;
+				
+				Rules tempRule = (Rules)charts[i].table.elementAt(j);
+				
+				String ruleNum = "S" + tempRule.ruleNum;
+				
+				prod = tempRule.rule.elementAt(0) + " -> ";
+				for (int k = 1; k < tempRule.dot; k++) {
+					prod += tempRule.rule.elementAt(k);
+				}
+				prod += ".";
+				for (int k = tempRule.dot; k < tempRule.rule.size(); k++) {
+					prod += " " + tempRule.rule.elementAt(k);
+				}
+				
+				origin = "[" + tempRule.start + ", " + tempRule.end + "]";
+				
+				switch(tempRule.ch){
+					case 'C' : comment = "Completor"; break;
+					case 'D' : comment = "Dummy Start State"; break;
+					case 'P' : comment = "Predictor"; break;
+					case 'S' : comment = "Scanner"; break;
+					default : comment = "INVALID!"; break;
+				}
+				
+				String[] rowData = {ruleNum, prod, origin, comment};
+				tableModel.addRow(rowData);
+			}
+		}
+		
+		chartsTable.setModel(tableModel);
+	}
 }

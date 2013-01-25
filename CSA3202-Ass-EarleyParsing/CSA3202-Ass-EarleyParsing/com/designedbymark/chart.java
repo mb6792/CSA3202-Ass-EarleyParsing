@@ -2,10 +2,10 @@ package com.designedbymark;
 
 import java.util.Vector;
 
-public class chart {
+public class Chart {
 	Vector table;
 	
-	chart(){
+	Chart(){
 		table = new Vector<>();
 	}
 }

@@ -2,15 +2,15 @@ package com.designedbymark;
 
 import java.util.Vector;
 
-public class node {
+public class Node {
 	String name;
 	Vector pointers;
 	
-	public node(){
+	public Node(){
 		pointers = new Vector();
 	}
 	
-	public node(String s){
+	public Node(String s){
 		name = s;
 		pointers = new Vector();
 	}
