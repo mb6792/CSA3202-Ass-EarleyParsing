@@ -156,15 +156,15 @@ public class MainFrame extends JFrame {
 	public void fillChartsTable(Chart[] charts){
 		DefaultTableModel tableModel = new DefaultTableModel();
 
-		String[] columnNames = { "State No.", "Production", "Origin", "Comment" };
+		String[] columnNames = { "State No.", "Production", "Origin", "[S]", "Comment" };
 		tableModel.setColumnIdentifiers(columnNames);
 
 		for (int i = 0; i < charts.length; i++) {
-			String[] chartNoRow =  {"CHART: " + i, "","",""};
+			String[] chartNoRow =  {"CHART: " + i, "","","",""};
 			tableModel.addRow(chartNoRow);
 			for (int j = 0; j < charts[i].table.size(); j++) {
 				int stateNo;
-				String prod, origin, comment;
+				String prod, origin, comment, s;
 				
 				Rules tempRule = (Rules)charts[i].table.elementAt(j);
 				
@@ -181,6 +181,17 @@ public class MainFrame extends JFrame {
 				
 				origin = "[" + tempRule.start + ", " + tempRule.end + "]";
 				
+				s = "[";
+				if(tempRule.pointer.size() > 0){
+					for (int k = 0; k < tempRule.pointer.size(); k++) {
+						s += "S"+tempRule.pointer.elementAt(k);
+						if (k != (tempRule.pointer.size()-1)) {
+							s += ", ";
+						}
+					}
+				}
+				s += "]";
+				
 				switch(tempRule.ch){
 					case 'C' : comment = "Completor"; break;
 					case 'D' : comment = "Dummy Start State"; break;
@@ -189,7 +200,7 @@ public class MainFrame extends JFrame {
 					default : comment = "INVALID!"; break;
 				}
 				
-				String[] rowData = {ruleNum, prod, origin, comment};
+				String[] rowData = {ruleNum, prod, origin, s, comment};
 				tableModel.addRow(rowData);
 			}
 		}

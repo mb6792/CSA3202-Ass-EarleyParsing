@@ -285,6 +285,7 @@ class Earley{
 					}
 					if (flag == false) {
 						Node tempNodeAdd = new Node((String)tempRule.rule.elementAt(1)); 
+						node.pointers.addElement(tempNodeAdd);
 					}
 					return node;
 				}
