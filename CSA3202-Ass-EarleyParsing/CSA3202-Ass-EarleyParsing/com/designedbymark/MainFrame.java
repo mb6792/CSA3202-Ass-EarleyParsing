@@ -7,7 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,6 +36,8 @@ public class MainFrame extends JFrame {
 	private JTextField txtInputString;
 	
 	private Earley e = null;
+	
+	private int lastRuleNo;
 
 	/**
 	 * Create the frame.
@@ -136,11 +140,16 @@ public class MainFrame extends JFrame {
 	public void recGrammar(boolean displayMessage){
 		String grammarFile = importPathTF.getText();
 		String sentence = txtInputString.getText();
+		
+		long startTime = System.nanoTime();
 		try {
 			e = new Earley(grammarFile, sentence);
 		} catch (IOException e1) {
 			JOptionPane.showMessageDialog(null, "Error in Earley Parsing", "Error", JOptionPane.ERROR_MESSAGE);
 		}
+		long endTime = System.nanoTime();
+		long duration = endTime - startTime;
+		double timeTaken  = (double)duration / 1000000000;
 		
 		if(displayMessage){
 			if(e.getFound()){
@@ -151,6 +160,12 @@ public class MainFrame extends JFrame {
 		}
 		
 		fillChartsTable(e.getCharts());
+		
+		System.out.println("Performance Statistics for '" + sentence + "':");
+		System.out.println("Dotted Rules Instances Created: " + lastRuleNo);
+		System.out.println("Useless Rules: ");
+		System.out.println("Duration: " + timeTaken + " seconds");
+		System.out.println();
 	}
 
 	public void fillChartsTable(Chart[] charts){
@@ -169,6 +184,7 @@ public class MainFrame extends JFrame {
 				Rules tempRule = (Rules)charts[i].table.elementAt(j);
 				
 				String ruleNum = "S" + tempRule.ruleNum;
+				lastRuleNo = tempRule.ruleNum;
 				
 				prod = tempRule.rule.elementAt(0) + " -> ";
 				for (int k = 1; k < tempRule.dot; k++) {

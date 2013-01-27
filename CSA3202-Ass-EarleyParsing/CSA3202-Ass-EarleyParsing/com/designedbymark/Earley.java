@@ -17,6 +17,7 @@ class Earley{
 	public Chart lexicon[];				//the lexicon
 	public String sentenceArr[];		//sentence to be parsed
 	Node parseTree;
+	Vector<Node> parseTrees = new Vector<Node>();
 	
 	String sentence;
 	
@@ -177,6 +178,7 @@ class Earley{
 		if(ruleNum != -1){
 			found = true;
 			parseTree = tree(ruleNum);
+			parseTrees.addElement(parseTree);
 		}
 	}
 	
@@ -296,5 +298,9 @@ class Earley{
 	
 	public Node getParseTree(){
 		return parseTree;
+	}
+	
+	public Vector<Node> getParseTrees(){
+		return parseTrees;
 	}
 }
