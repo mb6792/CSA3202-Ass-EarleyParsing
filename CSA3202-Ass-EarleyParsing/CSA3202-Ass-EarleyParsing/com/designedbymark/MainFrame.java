@@ -120,7 +120,7 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				recGrammar(false);
 				
-				Tree t = new Tree(e.getParseTree());
+				Tree t = new Tree(e.getParseTrees());
 				t.setVisible(true);
 			}
 		});
