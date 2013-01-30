@@ -118,10 +118,14 @@ public class MainFrame extends JFrame {
 		JButton btnParse = new JButton("Parse");
 		btnParse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				recGrammar(false);
+				boolean found = recGrammar(false);
 				
-				Tree t = new Tree(e.getParseTrees());
-				t.setVisible(true);
+				if(found){
+					Tree t = new Tree(e.getParseTrees());
+					t.setVisible(true);
+				}else{
+					JOptionPane.showMessageDialog(null, "Sentence not in L(G)", "Not Found", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		panel_1.add(btnParse);
@@ -137,7 +141,7 @@ public class MainFrame extends JFrame {
 		scrollPane.setViewportView(chartsTable);
 	}
 	
-	public void recGrammar(boolean displayMessage){
+	public boolean recGrammar(boolean displayMessage){
 		String grammarFile = importPathTF.getText();
 		String sentence = txtInputString.getText();
 		
@@ -166,6 +170,8 @@ public class MainFrame extends JFrame {
 		System.out.println("Useless Rules: ");
 		System.out.println("Duration: " + timeTaken + " seconds");
 		System.out.println();
+		
+		return e.getFound();
 	}
 
 	public void fillChartsTable(Chart[] charts){

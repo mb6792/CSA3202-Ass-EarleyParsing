@@ -161,7 +161,7 @@ class Earley{
 						c++;
 						tempRule.ruleNum = c;
 					}
-					completor(tempRule);
+					completer(tempRule);
 				}
 			}
 		}
@@ -203,7 +203,7 @@ class Earley{
 		}
 	}
 	
-	public void completor(Rules rule){
+	public void completer(Rules rule){
 		for(int i=0; i<charts[rule.start].table.size(); i++){
 			Rules tempRule = (Rules) charts[rule.start].table.elementAt(i);
 			if(tempRule.rule.size() != tempRule.dot){
